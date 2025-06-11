@@ -14,7 +14,7 @@ spring:
     gateway:
 
       discovery:
-        locator:
+        locator:  
           enable: true
       routes:
 

@@ -7,33 +7,29 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().and()
+                .cors()  // ✅ Habilita CORS en Spring Security
+                .and()
                 .csrf().disable()
-                .authorizeRequests()
-                .anyRequest().permitAll();
+                .authorizeRequests().anyRequest().permitAll();
     }
 
+    // ✅ Configuración CORS completa para permitir acceso desde tu frontend
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // IMPORTANTE: Usar setAllowedOriginPatterns en lugar de setAllowedOrigins
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000"));
-
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // tu frontend
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); // Solo si tu frontend usa 'credentials: include'
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
