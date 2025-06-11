@@ -3,15 +3,17 @@ package com.example.msauth.controller;
 import com.example.msauth.dto.AuthUserDto;
 import com.example.msauth.dto.TokenDto;
 import com.example.msauth.entity.AuthUser;
-
 import com.example.msauth.service.AuthUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthUserController {
+
     @Autowired
     AuthUserService authUserService;
 
@@ -31,11 +33,13 @@ public class AuthUserController {
         return ResponseEntity.ok(tokenDto);
     }
 
+    // ✅ Modificado para devolver solo el username
     @PostMapping("/create")
-    public ResponseEntity<AuthUser> create(@RequestBody AuthUserDto authUserDto) {
+    public ResponseEntity<Map<String, String>> create(@RequestBody AuthUserDto authUserDto) {
         AuthUser authUser = authUserService.save(authUserDto);
         if (authUser == null)
             return ResponseEntity.badRequest().build();
-        return ResponseEntity.ok(authUser);
+
+        return ResponseEntity.ok(Map.of("username", authUser.getUserName()));
     }
 }
