@@ -30,7 +30,6 @@ public class VentaServiceImpl implements VentaService {
     @Override
     @Transactional
     public VentaDTO registrarVenta(VentaDTO ventaDTO) {
-        // 1. Obtener o crear cliente
         ClienteDTO cliente;
         if (ventaDTO.getClienteId() != null) {
             cliente = clienteClient.obtenerClientePorId(ventaDTO.getClienteId());
@@ -45,34 +44,29 @@ public class VentaServiceImpl implements VentaService {
             );
         }
 
-        // 2. Crear entidad Venta usando ID de cliente
         Venta venta = Venta.builder()
                 .clienteId(cliente.getId())
                 .fecha(ventaDTO.getFecha())
-                .total(0.0) // Se calculará más adelante
+                .total(0.0)
                 .build();
 
         venta = ventaRepository.save(venta);
 
-        // 3. Procesar detalles
         List<DetalleVenta> detalles = new ArrayList<>();
         BigDecimal totalVenta = BigDecimal.ZERO;
 
         for (DetalleVentaDTO det : ventaDTO.getDetalles()) {
-            // 3.1 Descontar stock en almacén
             almacenClient.descontarStock(det.getProductoId(), det.getCantidad());
 
-            // 3.2 Calcular subtotal, impuesto, descuento y totalItem con BigDecimal
             BigDecimal precio = BigDecimal.valueOf(det.getPrecioUnitario());
             BigDecimal cantidad = BigDecimal.valueOf(det.getCantidad());
             BigDecimal subtotal = precio.multiply(cantidad);
-            BigDecimal impuesto = subtotal.multiply(BigDecimal.valueOf(0.18)); // IGV 18%
+            BigDecimal impuesto = subtotal.multiply(BigDecimal.valueOf(0.18));
             BigDecimal descuento = det.getDescuento() != null
                     ? BigDecimal.valueOf(det.getDescuento())
                     : BigDecimal.ZERO;
             BigDecimal totalItem = subtotal.add(impuesto).subtract(descuento);
 
-            // 3.3 Construir DetalleVenta convirtiendo a Double donde corresponda
             DetalleVenta detalle = DetalleVenta.builder()
                     .venta(venta)
                     .productoId(det.getProductoId())
@@ -91,14 +85,11 @@ public class VentaServiceImpl implements VentaService {
             totalVenta = totalVenta.add(totalItem);
         }
 
-        // 4. Actualizar el total en la venta (convertir BigDecimal a Double)
         venta.setTotal(totalVenta.doubleValue());
         ventaRepository.save(venta);
 
-        // 5. Mapear entidad y detalles a DTO y regresar
-        List<DetalleVenta> listaDetallesGuardados = detalleVentaRepository.findByVentaId(venta.getId());
         List<DetalleVentaDTO> detalleDTOs = new ArrayList<>();
-        for (DetalleVenta d : listaDetallesGuardados) {
+        for (DetalleVenta d : detalles) {
             detalleDTOs.add(DetalleVentaDTO.builder()
                     .id(d.getId())
                     .productoId(d.getProductoId())
@@ -115,14 +106,13 @@ public class VentaServiceImpl implements VentaService {
         return VentaDTO.builder()
                 .id(venta.getId())
                 .clienteId(cliente.getId())
-                .clienteNombre(cliente.getNombre())          // <-- esto
-                .clienteEmail(cliente.getEmail())            // <-- esto
-                .clienteTelefono(cliente.getTelefono())      // <-- esto
+                .clienteNombre(cliente.getNombre())
+                .clienteEmail(cliente.getEmail())
+                .clienteTelefono(cliente.getTelefono())
                 .fecha(venta.getFecha())
                 .total(totalVenta.doubleValue())
                 .detalles(detalleDTOs)
                 .build();
-
     }
 
     @Override
@@ -130,7 +120,6 @@ public class VentaServiceImpl implements VentaService {
         Venta venta = ventaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
 
-        // Obtener detalles de la venta
         List<DetalleVenta> listaDetalles = detalleVentaRepository.findByVentaId(venta.getId());
         List<DetalleVentaDTO> detalleDTOs = new ArrayList<>();
         for (DetalleVenta d : listaDetalles) {
@@ -147,9 +136,14 @@ public class VentaServiceImpl implements VentaService {
                     .build());
         }
 
+        ClienteDTO cliente = clienteClient.obtenerClientePorId(venta.getClienteId());
+
         return VentaDTO.builder()
                 .id(venta.getId())
-                .clienteId(venta.getClienteId())
+                .clienteId(cliente.getId())
+                .clienteNombre(cliente.getNombre())
+                .clienteEmail(cliente.getEmail())
+                .clienteTelefono(cliente.getTelefono())
                 .fecha(venta.getFecha())
                 .total(venta.getTotal())
                 .detalles(detalleDTOs)
@@ -178,9 +172,14 @@ public class VentaServiceImpl implements VentaService {
                         .build());
             }
 
+            ClienteDTO cliente = clienteClient.obtenerClientePorId(v.getClienteId());
+
             listaDTO.add(VentaDTO.builder()
                     .id(v.getId())
-                    .clienteId(v.getClienteId())
+                    .clienteId(cliente.getId())
+                    .clienteNombre(cliente.getNombre())
+                    .clienteEmail(cliente.getEmail())
+                    .clienteTelefono(cliente.getTelefono())
                     .fecha(v.getFecha())
                     .total(v.getTotal())
                     .detalles(detalleDTOs)
