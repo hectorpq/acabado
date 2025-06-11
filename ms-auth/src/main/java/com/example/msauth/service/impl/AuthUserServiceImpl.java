@@ -22,12 +22,12 @@ public class AuthUserServiceImpl implements AuthUserService {
 
     @Override
     public AuthUser save(AuthUserDto authUserDto) {
-        Optional<AuthUser> user = authUserRepository.findByUserName(authUserDto.getUserName());
+        Optional<AuthUser> user = authUserRepository.findByUserName(authUserDto.getUsername());
         if (user.isPresent())
             return null;
         String password = passwordEncoder.encode(authUserDto.getPassword());
         AuthUser authUser = AuthUser.builder()
-                .userName(authUserDto.getUserName())
+                .userName(authUserDto.getUsername())
                 .password(password)
                 .build();
 
@@ -42,7 +42,7 @@ public class AuthUserServiceImpl implements AuthUserService {
 
     @Override
     public TokenDto login(AuthUserDto authUserDto) {
-        Optional<AuthUser> user = authUserRepository.findByUserName(authUserDto.getUserName());
+        Optional<AuthUser> user = authUserRepository.findByUserName(authUserDto.getUsername());
         if (!user.isPresent())
             return null;
         if (passwordEncoder.matches(authUserDto.getPassword(), user.get().getPassword()))
