@@ -3,17 +3,15 @@ package com.example.msauth.controller;
 import com.example.msauth.dto.AuthUserDto;
 import com.example.msauth.dto.TokenDto;
 import com.example.msauth.entity.AuthUser;
-import com.example.msauth.service.AuthUserService;
 
+import com.example.msauth.service.AuthUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/auth")
 public class AuthUserController {
-
     @Autowired
     AuthUserService authUserService;
 
