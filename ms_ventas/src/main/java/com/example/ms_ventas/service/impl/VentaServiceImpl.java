@@ -115,10 +115,14 @@ public class VentaServiceImpl implements VentaService {
         return VentaDTO.builder()
                 .id(venta.getId())
                 .clienteId(cliente.getId())
+                .clienteNombre(cliente.getNombre())          // <-- esto
+                .clienteEmail(cliente.getEmail())            // <-- esto
+                .clienteTelefono(cliente.getTelefono())      // <-- esto
                 .fecha(venta.getFecha())
                 .total(totalVenta.doubleValue())
                 .detalles(detalleDTOs)
                 .build();
+
     }
 
     @Override
