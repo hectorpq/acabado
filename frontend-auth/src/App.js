@@ -16,7 +16,7 @@ function App() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ username, password }),
-        credentials: 'include' // solo si usas cookies, JWT, etc.
+
       });
 
       if (response.ok) {

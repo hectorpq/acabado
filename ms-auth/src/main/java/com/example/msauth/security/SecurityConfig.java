@@ -16,20 +16,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors()  // ✅ Habilita CORS en Spring Security
+                .cors()
                 .and()
                 .csrf().disable()
                 .authorizeRequests().anyRequest().permitAll();
     }
 
-    // ✅ Configuración CORS completa para permitir acceso desde tu frontend
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // tu frontend
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000")); // ← cambio clave
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // Solo si tu frontend usa 'credentials: include'
+        configuration.setAllowCredentials(true); // si usas cookies o auth headers
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
