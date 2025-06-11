@@ -14,15 +14,15 @@ public class Cliente {
 
     private String nombre;
     private String email;
+    private String telefono; // <-- Añadido
 
-    // Constructor vacío (requerido por JPA)
     public Cliente() {}
 
-    // Constructor con parámetros
-    public Cliente(Integer id, String nombre, String email) {
+    public Cliente(Integer id, String nombre, String email, String telefono) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
+        this.telefono = telefono;
     }
 
     // Getters y Setters
@@ -49,5 +49,13 @@ public class Cliente {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 }

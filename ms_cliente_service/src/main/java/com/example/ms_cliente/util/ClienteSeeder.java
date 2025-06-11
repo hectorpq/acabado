@@ -17,9 +17,9 @@ public class ClienteSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (clienteRepository.count() == 0) {
-            Cliente cli1 = new Cliente(null, "Juan Pérez", "juan.perez@gmail.com");
-            Cliente cli2 = new Cliente(null, "María García", "maria.garcia@hotmail.com");
-            Cliente cli3 = new Cliente(null, "Luis Torres", "luis.torres@yahoo.com");
+            Cliente cli1 = new Cliente(null, "Juan Pérez", "juan.perez@gmail.com", "987654321");
+            Cliente cli2 = new Cliente(null, "María García", "maria.garcia@hotmail.com", "912345678");
+            Cliente cli3 = new Cliente(null, "Luis Torres", "luis.torres@yahoo.com", "998877665");
 
             clienteRepository.save(cli1);
             clienteRepository.save(cli2);
@@ -30,4 +30,5 @@ public class ClienteSeeder implements CommandLineRunner {
             System.out.println("Los clientes ya existen, no se insertaron datos.");
         }
     }
+
 }
