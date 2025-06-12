@@ -8,7 +8,7 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/TzShaka/Frontend-SPORTS.git # ruta del repositorio git
+          uri: https://github.com/hectorpq/acabado.git # ruta del repositorio git
           searchPaths: config-data
           default-label: main
   security:
