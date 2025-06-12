@@ -190,13 +190,21 @@ public class VentaServiceImpl implements VentaService {
     }
 
     @Override
+    @Transactional
     public void eliminarVenta(Long id) {
         if (!ventaRepository.existsById(id)) {
             throw new RuntimeException("No existe venta con ID: " + id);
         }
+
+        List<DetalleVenta> detalles = detalleVentaRepository.findByVentaId(id);
+        for (DetalleVenta d : detalles) {
+            almacenClient.descontarStock(d.getProductoId(), d.getCantidad());
+        }
+
         detalleVentaRepository.deleteByVentaId(id);
         ventaRepository.deleteById(id);
     }
+
 
     // 🆕 Método agregado
     @Override
@@ -210,7 +218,13 @@ public class VentaServiceImpl implements VentaService {
         venta.setClienteId(cliente.getId());
         venta.setFecha(ventaDTO.getFecha());
 
-        // Eliminar detalles anteriores
+        // 🔄 Revertir stock de detalles anteriores
+        List<DetalleVenta> detallesAnteriores = detalleVentaRepository.findByVentaId(venta.getId());
+        for (DetalleVenta d : detallesAnteriores) {
+            almacenClient.descontarStock(d.getProductoId(), d.getCantidad());
+        }
+
+        // 🗑️ Eliminar detalles anteriores
         detalleVentaRepository.deleteByVentaId(venta.getId());
 
         List<DetalleVenta> nuevosDetalles = new ArrayList<>();
