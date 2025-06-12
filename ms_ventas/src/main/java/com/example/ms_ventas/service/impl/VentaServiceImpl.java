@@ -197,4 +197,82 @@ public class VentaServiceImpl implements VentaService {
         detalleVentaRepository.deleteByVentaId(id);
         ventaRepository.deleteById(id);
     }
+
+    // 🆕 Método agregado
+    @Override
+    @Transactional
+    public VentaDTO actualizarVenta(Long id, VentaDTO ventaDTO) {
+        Venta venta = ventaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
+
+        ClienteDTO cliente = clienteClient.obtenerClientePorId(ventaDTO.getClienteId());
+
+        venta.setClienteId(cliente.getId());
+        venta.setFecha(ventaDTO.getFecha());
+
+        // Eliminar detalles anteriores
+        detalleVentaRepository.deleteByVentaId(venta.getId());
+
+        List<DetalleVenta> nuevosDetalles = new ArrayList<>();
+        BigDecimal totalVenta = BigDecimal.ZERO;
+
+        for (DetalleVentaDTO det : ventaDTO.getDetalles()) {
+            almacenClient.descontarStock(det.getProductoId(), det.getCantidad());
+
+            BigDecimal precio = BigDecimal.valueOf(det.getPrecioUnitario());
+            BigDecimal cantidad = BigDecimal.valueOf(det.getCantidad());
+            BigDecimal subtotal = precio.multiply(cantidad);
+            BigDecimal impuesto = subtotal.multiply(BigDecimal.valueOf(0.18));
+            BigDecimal descuento = det.getDescuento() != null
+                    ? BigDecimal.valueOf(det.getDescuento())
+                    : BigDecimal.ZERO;
+            BigDecimal totalItem = subtotal.add(impuesto).subtract(descuento);
+
+            DetalleVenta detalle = DetalleVenta.builder()
+                    .venta(venta)
+                    .productoId(det.getProductoId())
+                    .descripcion(det.getDescripcion())
+                    .cantidad(det.getCantidad())
+                    .precioUnitario(det.getPrecioUnitario())
+                    .subtotal(subtotal.doubleValue())
+                    .impuesto(impuesto.doubleValue())
+                    .descuento(descuento.doubleValue())
+                    .totalItem(totalItem.doubleValue())
+                    .build();
+
+            detalleVentaRepository.save(detalle);
+            nuevosDetalles.add(detalle);
+
+            totalVenta = totalVenta.add(totalItem);
+        }
+
+        venta.setTotal(totalVenta.doubleValue());
+        ventaRepository.save(venta);
+
+        List<DetalleVentaDTO> detalleDTOs = new ArrayList<>();
+        for (DetalleVenta d : nuevosDetalles) {
+            detalleDTOs.add(DetalleVentaDTO.builder()
+                    .id(d.getId())
+                    .productoId(d.getProductoId())
+                    .descripcion(d.getDescripcion())
+                    .cantidad(d.getCantidad())
+                    .precioUnitario(d.getPrecioUnitario())
+                    .subtotal(d.getSubtotal())
+                    .impuesto(d.getImpuesto())
+                    .descuento(d.getDescuento())
+                    .totalItem(d.getTotalItem())
+                    .build());
+        }
+
+        return VentaDTO.builder()
+                .id(venta.getId())
+                .clienteId(cliente.getId())
+                .clienteNombre(cliente.getNombre())
+                .clienteEmail(cliente.getEmail())
+                .clienteTelefono(cliente.getTelefono())
+                .fecha(venta.getFecha())
+                .total(venta.getTotal())
+                .detalles(detalleDTOs)
+                .build();
+    }
 }
